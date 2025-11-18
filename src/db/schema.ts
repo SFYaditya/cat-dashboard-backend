@@ -123,23 +123,38 @@ export class Database {
 
   // ========== Swap 相关方法 ==========
   async insertSwap(data: SwapData): Promise<void> {
-    return swapQueries.insertSwap(this.db, data);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('insertSwap is only supported for SQLite');
+    }
+    return swapQueries.insertSwap(this._db as sqlite3.Database, data);
   }
 
   async updateSwap(data: SwapUpdateData): Promise<void> {
-    return swapQueries.updateSwap(this.db, data);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('updateSwap is only supported for SQLite');
+    }
+    return swapQueries.updateSwap(this._db as sqlite3.Database, data);
   }
 
   async getSwapsNeedingBackfill(limit: number = 100): Promise<any[]> {
-    return swapQueries.getSwapsNeedingBackfill(this.db, limit);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('getSwapsNeedingBackfill is only supported for SQLite');
+    }
+    return swapQueries.getSwapsNeedingBackfill(this._db as sqlite3.Database, limit);
   }
 
   async getSwapSummary(limit: number = 100): Promise<any> {
-    return swapQueries.getSwapSummary(this.db, limit);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('getSwapSummary is only supported for SQLite');
+    }
+    return swapQueries.getSwapSummary(this._db as sqlite3.Database, limit);
   }
 
   async getLatestSwaps(limit: number = 20): Promise<any[]> {
-    return swapQueries.getLatestSwaps(this.db, limit);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('getLatestSwaps is only supported for SQLite');
+    }
+    return swapQueries.getLatestSwaps(this._db as sqlite3.Database, limit);
   }
 
   async getAddressSwaps(address: string): Promise<any[]> {
