@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import sqlite3 from 'sqlite3';
 import { promisify } from 'util';
-import { getDatabase, DB_TYPE } from './connection';
 
 dotenv.config();
 
