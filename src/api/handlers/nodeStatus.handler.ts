@@ -11,7 +11,7 @@ import { API_CONFIG } from '../config';
  */
 export async function getNodeStatusHandler(req: Request, res: Response): Promise<void> {
   try {
-    const provider = new ethers.JsonRpcProvider(API_CONFIG.RPC_URL);
+    const provider = new ethers.JsonRpcProvider(API_CONFIG.RPC_HTTP);
     
     // 测量延迟
     const startTime = Date.now();
@@ -41,7 +41,7 @@ export async function getNodeStatusHandler(req: Request, res: Response): Promise
       status,
       latency,
       blockNumber,
-      rpcUrl: API_CONFIG.RPC_URL
+      rpcUrl: API_CONFIG.RPC_HTTP
     });
   } catch (error: any) {
     console.error('Error in getNodeStatusHandler:', error);

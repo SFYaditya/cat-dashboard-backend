@@ -63,181 +63,205 @@ export class Database {
 
   // ========== Sync State 相关方法 ==========
   async getSyncState(): Promise<SyncState | null> {
-    return syncQueries.getSyncState(this.db);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return syncQueries.getSyncState(this._db as sqlite3.Database);
   }
 
   async updateSyncState(lastBlock: number, startBlock?: number): Promise<void> {
-    return syncQueries.updateSyncState(this.db, lastBlock, startBlock);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return syncQueries.updateSyncState(this._db as sqlite3.Database, lastBlock, startBlock);
   }
 
   // ========== Transfer 相关方法 ==========
   async insertTransfer(data: TransferData): Promise<void> {
-    return transferQueries.insertTransfer(this.db, data);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return transferQueries.insertTransfer(this._db as sqlite3.Database, data);
   }
 
   async getTransfersWithFilters(params: TransfersFilterParams): Promise<{ transfers: any[]; total: number }> {
-    return transferQueries.getTransfersWithFilters(this.db, params);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return transferQueries.getTransfersWithFilters(this._db as sqlite3.Database, params);
   }
 
   async getLatestTransfers(limit: number = 20): Promise<any[]> {
-    return transferQueries.getLatestTransfers(this.db, limit);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return transferQueries.getLatestTransfers(this._db as sqlite3.Database, limit);
   }
 
   async getAddressTransferSummary(address: string): Promise<TransferSummary> {
-    return transferQueries.getAddressTransferSummary(this.db, address);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return transferQueries.getAddressTransferSummary(this._db as sqlite3.Database, address);
   }
 
   async getAddressTransferGraph(address: string, limit: number = 20): Promise<TransferGraph> {
-    return transferQueries.getAddressTransferGraph(this.db, address, limit);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return transferQueries.getAddressTransferGraph(this._db as sqlite3.Database, address, limit);
   }
 
   async getDailyTransferSummary(date: string): Promise<DailyTransferSummary | null> {
-    return transferQueries.getDailyTransferSummary(this.db, date);
+    if (DB_TYPE === 'postgresql') {
+      throw new Error('PostgreSQL not fully supported yet. Please use SQLite for now.');
+    }
+    return transferQueries.getDailyTransferSummary(this._db as sqlite3.Database, date);
   }
 
   // ========== Swap 相关方法 ==========
   async insertSwap(data: SwapData): Promise<void> {
-    return swapQueries.insertSwap(this.db, data);
+    return swapQueries.insertSwap(this._db as sqlite3.Database, data);
   }
 
   async updateSwap(data: SwapUpdateData): Promise<void> {
-    return swapQueries.updateSwap(this.db, data);
+    return swapQueries.updateSwap(this._db as sqlite3.Database, data);
   }
 
   async getSwapsNeedingBackfill(limit: number = 100): Promise<any[]> {
-    return swapQueries.getSwapsNeedingBackfill(this.db, limit);
+    return swapQueries.getSwapsNeedingBackfill(this._db as sqlite3.Database, limit);
   }
 
   async getSwapSummary(limit: number = 100): Promise<any> {
-    return swapQueries.getSwapSummary(this.db, limit);
+    return swapQueries.getSwapSummary(this._db as sqlite3.Database, limit);
   }
 
   async getLatestSwaps(limit: number = 20): Promise<any[]> {
-    return swapQueries.getLatestSwaps(this.db, limit);
+    return swapQueries.getLatestSwaps(this._db as sqlite3.Database, limit);
   }
 
   async getAddressSwaps(address: string): Promise<any[]> {
-    return swapQueries.getAddressSwaps(this.db, address);
+    return swapQueries.getAddressSwaps(this._db as sqlite3.Database, address);
   }
 
   async getSwapsWithFilters(params: SwapsFilterParams): Promise<{ swaps: any[]; total: number }> {
-    return swapQueries.getSwapsWithFilters(this.db, params);
+    return swapQueries.getSwapsWithFilters(this._db as sqlite3.Database, params);
   }
 
   async getSwapsForKline(startTime?: number, endTime?: number): Promise<any[]> {
-    return swapQueries.getSwapsForKline(this.db, startTime, endTime);
+    return swapQueries.getSwapsForKline(this._db as sqlite3.Database, startTime, endTime);
   }
 
   async getLatestPrice(): Promise<string | null> {
-    return swapQueries.getLatestPrice(this.db);
+    return swapQueries.getLatestPrice(this._db as sqlite3.Database);
   }
 
   async getCurrentPrice(): Promise<string | null> {
-    return swapQueries.getCurrentPrice(this.db);
+    return swapQueries.getCurrentPrice(this._db as sqlite3.Database);
   }
 
   async getSwapsByTimeRange(startTime: number, endTime: number): Promise<any[]> {
-    return dailyQueries.getSwapsByTimeRange(this.db, startTime, endTime);
+    return dailyQueries.getSwapsByTimeRange(this._db as sqlite3.Database, startTime, endTime);
   }
 
   // ========== Holder 相关方法 ==========
   async updateHolderBalance(address: string, delta: string, operation: 'add' | 'subtract'): Promise<void> {
-    return holderQueries.updateHolderBalance(this.db, address, delta, operation);
+    return holderQueries.updateHolderBalance(this._db as sqlite3.Database, address, delta, operation);
   }
 
   async getHolderBalance(address: string): Promise<{ balance_cat: string } | null> {
-    return holderQueries.getHolderBalance(this.db, address);
+    return holderQueries.getHolderBalance(this._db as sqlite3.Database, address);
   }
 
   async getLatestChainBalance(address: string): Promise<{ balance_cat_after: string; balance_usdt_after: string } | null> {
-    return holderQueries.getLatestChainBalance(this.db, address);
+    return holderQueries.getLatestChainBalance(this._db as sqlite3.Database, address);
   }
 
   async getCurrentHoldersCount(): Promise<number> {
-    return holderQueries.getCurrentHoldersCount(this.db);
+    return holderQueries.getCurrentHoldersCount(this._db as sqlite3.Database);
   }
 
   async getHoldersCountForDay(day: string): Promise<number> {
-    return holderQueries.getHoldersCountForDay(this.db, day);
+    return holderQueries.getHoldersCountForDay(this._db as sqlite3.Database, day);
   }
 
   async saveDailyHoldersSnapshot(day: string): Promise<void> {
-    return holderQueries.saveDailyHoldersSnapshot(this.db, day);
+    return holderQueries.saveDailyHoldersSnapshot(this._db as sqlite3.Database, day);
   }
 
   async getOpenHoldersCount(day: string): Promise<number | null> {
-    return holderQueries.getOpenHoldersCount(this.db, day);
+    return holderQueries.getOpenHoldersCount(this._db as sqlite3.Database, day);
   }
 
   // ========== Address 相关方法 ==========
   async getAddressLabel(address: string): Promise<any | null> {
-    return addressQueries.getAddressLabel(this.db, address);
+    return addressQueries.getAddressLabel(this._db as sqlite3.Database, address);
   }
 
   async upsertAddressStats(data: AddressStatsData): Promise<void> {
-    return addressQueries.upsertAddressStats(this.db, data);
+    return addressQueries.upsertAddressStats(this._db as sqlite3.Database, data);
   }
 
   async getAddressStats(address: string): Promise<any | null> {
-    return addressQueries.getAddressStats(this.db, address);
+    return addressQueries.getAddressStats(this._db as sqlite3.Database, address);
   }
 
   async insertAddressRound(data: AddressRoundData): Promise<void> {
-    return addressQueries.insertAddressRound(this.db, data);
+    return addressQueries.insertAddressRound(this._db as sqlite3.Database, data);
   }
 
   async getAddressRounds(address: string): Promise<any[]> {
-    return addressQueries.getAddressRounds(this.db, address);
+    return addressQueries.getAddressRounds(this._db as sqlite3.Database, address);
   }
 
   async getAllTradingAddresses(): Promise<string[]> {
-    return addressQueries.getAllTradingAddresses(this.db);
+    return addressQueries.getAllTradingAddresses(this._db as sqlite3.Database);
   }
 
   async getAllTraderAddresses(): Promise<string[]> {
-    return addressQueries.getAllTraderAddresses(this.db);
+    return addressQueries.getAllTraderAddresses(this._db as sqlite3.Database);
   }
 
   async getAddressLast7DStats(address: string): Promise<{
     volume_usd: string;
     trades: number;
   }> {
-    return addressQueries.getAddressLast7DStats(this.db, address);
+    return addressQueries.getAddressLast7DStats(this._db as sqlite3.Database, address);
   }
 
   // ========== Kline 相关方法 ==========
   async upsertKline(data: KlineData): Promise<void> {
-    return klineQueries.upsertKline(this.db, data);
+    return klineQueries.upsertKline(this._db as sqlite3.Database, data);
   }
 
   async getKlines(params: KlineQueryParams): Promise<any[]> {
-    return klineQueries.getKlines(this.db, params);
+    return klineQueries.getKlines(this._db as sqlite3.Database, params);
   }
 
   async getLatestPriceForOverview(): Promise<string | null> {
-    return klineQueries.getLatestPriceForOverview(this.db);
+    return klineQueries.getLatestPriceForOverview(this._db as sqlite3.Database);
   }
 
   // ========== Daily Metrics 相关方法 ==========
   async upsertDailyMetrics(data: DailyMetricsData): Promise<void> {
-    return dailyQueries.upsertDailyMetrics(this.db, data);
+    return dailyQueries.upsertDailyMetrics(this._db as sqlite3.Database, data);
   }
 
   async getDailyMetrics(startDay?: string, endDay?: string): Promise<any[]> {
-    return dailyQueries.getDailyMetrics(this.db, startDay, endDay);
+    return dailyQueries.getDailyMetrics(this._db as sqlite3.Database, startDay, endDay);
   }
 
   async getUniqueTradersForDay(dayStart: number, dayEnd: number): Promise<number> {
-    return dailyQueries.getUniqueTradersForDay(this.db, dayStart, dayEnd);
+    return dailyQueries.getUniqueTradersForDay(this._db as sqlite3.Database, dayStart, dayEnd);
   }
 
   // ========== Daily Trade Stats 相关方法 ==========
   async upsertDailyTradeStats(date: string, data: DailyTradeStatsData): Promise<void> {
-    return dailyQueries.upsertDailyTradeStats(this.db, date, data);
+    return dailyQueries.upsertDailyTradeStats(this._db as sqlite3.Database, date, data);
   }
 
   async getDailyTradeStats(startDate?: string, endDate?: string): Promise<Array<DailyTradeStatsData>> {
-    return dailyQueries.getDailyTradeStats(this.db, startDate, endDate);
+    return dailyQueries.getDailyTradeStats(this._db as sqlite3.Database, startDate, endDate);
   }
 
   async incrementDailyTradeStats(
@@ -246,30 +270,36 @@ export class Database {
     side: 'buy' | 'sell',
     amountCat: string
   ): Promise<void> {
-    return dailyQueries.incrementDailyTradeStats(this.db, dateStr, traderAddress, side, amountCat);
+    return dailyQueries.incrementDailyTradeStats(this._db as sqlite3.Database, dateStr, traderAddress, side, amountCat);
   }
 
   async hasDailyTradeStats(date: string): Promise<boolean> {
-    return dailyQueries.hasDailyTradeStats(this.db, date);
+    return dailyQueries.hasDailyTradeStats(this._db as sqlite3.Database, date);
   }
 
   async getOpenPrice(day: string): Promise<string | null> {
-    return dailyQueries.getOpenPrice(this.db, day);
+    return dailyQueries.getOpenPrice(this._db as sqlite3.Database, day);
   }
 
   async getFirstSwapOfDay(day: string): Promise<{ block_number: number; block_time: number } | null> {
-    return dailyQueries.getFirstSwapOfDay(this.db, day);
+    return dailyQueries.getFirstSwapOfDay(this._db as sqlite3.Database, day);
   }
 
   async getLastProcessedSwapId(): Promise<number> {
-    return dailyQueries.getLastProcessedSwapId(this.db);
+    return dailyQueries.getLastProcessedSwapId(this._db as sqlite3.Database);
   }
 
   async updateLastProcessedSwapId(swapId: number): Promise<void> {
     // 这个方法在原始代码中使用 sync_state 表存储，但逻辑上应该属于 daily 查询
     // 为了保持兼容性，暂时保留在这里，可以后续移到 daily.queries.ts
+    // 注意：这个方法只支持 SQLite，PostgreSQL 需要不同的实现
+    if (DB_TYPE === 'postgresql') {
+      // PostgreSQL 实现（如果需要）
+      throw new Error('updateLastProcessedSwapId not implemented for PostgreSQL');
+    }
     const { promisify } = await import('util');
-    const run = promisify(this.db.run.bind(this.db)) as (sql: string, params?: any[]) => Promise<sqlite3.RunResult>;
+    const sqliteDb = this._db as sqlite3.Database;
+    const run = promisify(sqliteDb.run.bind(sqliteDb)) as (sql: string, params?: any[]) => Promise<sqlite3.RunResult>;
     await run(
       `INSERT OR REPLACE INTO sync_state (key, last_block, updated_at)
        VALUES ('pnl_last_swap_id', ?, strftime('%s', 'now'))`,
@@ -278,11 +308,11 @@ export class Database {
   }
 
   async getSwapsAfterId(swapId: number): Promise<any[]> {
-    return dailyQueries.getSwapsAfterId(this.db, swapId);
+    return dailyQueries.getSwapsAfterId(this._db as sqlite3.Database, swapId);
   }
 
   async getPrice24HAgo(): Promise<string | null> {
-    return dailyQueries.getPrice24HAgo(this.db);
+    return dailyQueries.getPrice24HAgo(this._db as sqlite3.Database);
   }
 
   async get24HStats(): Promise<{
@@ -290,20 +320,20 @@ export class Database {
     swaps_count: number;
     unique_traders: number;
   }> {
-    return dailyQueries.get24HStats(this.db);
+    return dailyQueries.get24HStats(this._db as sqlite3.Database);
   }
 
   // ========== PnL 相关方法 ==========
   async upsertPnlDaily(address: string, date: string, data: Omit<PnlDailyData, 'address' | 'date'>): Promise<void> {
-    return pnlQueries.upsertPnlDaily(this.db, address, date, data);
+    return pnlQueries.upsertPnlDaily(this._db as sqlite3.Database, address, date, data);
   }
 
   async getAddressPnlHistory(address: string, days: number = 30): Promise<any[]> {
-    return pnlQueries.getAddressPnlHistory(this.db, address, days);
+    return pnlQueries.getAddressPnlHistory(this._db as sqlite3.Database, address, days);
   }
 
   async getAddressPnlSummary(address: string): Promise<any> {
-    return pnlQueries.getAddressPnlSummary(this.db, address);
+    return pnlQueries.getAddressPnlSummary(this._db as sqlite3.Database, address);
   }
 
   // ========== LP 快照相关方法 ==========
@@ -316,7 +346,7 @@ export class Database {
     usdt_amount: string;
     snapshot_type: string;
   } | null> {
-    return lpQueries.getLpSnapshot(this.db, date);
+    return lpQueries.getLpSnapshot(this._db as sqlite3.Database, date);
   }
 
   async upsertLpSnapshot(data: {
@@ -328,50 +358,38 @@ export class Database {
     usdt_amount: string;
     snapshot_type?: string;
   }): Promise<void> {
-    return lpQueries.upsertLpSnapshot(this.db, data);
+    return lpQueries.upsertLpSnapshot(this._db as sqlite3.Database, data);
   }
 
   // ========== 交易排行榜相关方法 ==========
   async getBuyVolumeTop(limit: number = 50, startTime?: number, endTime?: number) {
-    return tradingRankingsQueries.getBuyVolumeTop(this.db, limit, startTime, endTime);
+    return tradingRankingsQueries.getBuyVolumeTop(this._db as sqlite3.Database, limit, startTime, endTime);
   }
 
   async getSellVolumeTop(limit: number = 50, startTime?: number, endTime?: number) {
-    return tradingRankingsQueries.getSellVolumeTop(this.db, limit, startTime, endTime);
+    return tradingRankingsQueries.getSellVolumeTop(this._db as sqlite3.Database, limit, startTime, endTime);
   }
 
   async getBuyCountTop(limit: number = 20, startTime?: number, endTime?: number) {
-    return tradingRankingsQueries.getBuyCountTop(this.db, limit, startTime, endTime);
+    return tradingRankingsQueries.getBuyCountTop(this._db as sqlite3.Database, limit, startTime, endTime);
   }
 
   async getSellCountTop(limit: number = 20, startTime?: number, endTime?: number) {
-    return tradingRankingsQueries.getSellCountTop(this.db, limit, startTime, endTime);
+    return tradingRankingsQueries.getSellCountTop(this._db as sqlite3.Database, limit, startTime, endTime);
   }
 
   async getTradeCountTop(limit: number = 20, startTime?: number, endTime?: number) {
-    return tradingRankingsQueries.getTradeCountTop(this.db, limit, startTime, endTime);
+    return tradingRankingsQueries.getTradeCountTop(this._db as sqlite3.Database, limit, startTime, endTime);
   }
 
   async getBuySellRatio(startTime?: number, endTime?: number) {
-    return tradingRankingsQueries.getBuySellRatio(this.db, startTime, endTime);
-  }
-
-  // ========== 工具方法 ==========
-  async close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    return tradingRankingsQueries.getBuySellRatio(this._db as sqlite3.Database, startTime, endTime);
   }
 
   // 暴露 db 实例（用于向后兼容，某些地方可能需要直接访问）
-  get dbInstance(): sqlite3.Database {
-    return this.db;
+  // 注意：返回类型可能是 sqlite3.Database 或 Pool
+  get dbInstance(): sqlite3.Database | Pool {
+    return this._db;
   }
 }
 

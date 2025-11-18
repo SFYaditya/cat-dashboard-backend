@@ -13,7 +13,7 @@ export async function getSyncStatusHandler(req: Request, res: Response, db: Data
     const syncState = await db.getSyncState();
     const { ethers } = await import('ethers');
     const { API_CONFIG } = await import('../config');
-    const provider = new ethers.JsonRpcProvider(API_CONFIG.RPC_URL);
+    const provider = new ethers.JsonRpcProvider(API_CONFIG.RPC_HTTP);
     
     let currentBlock: number | null = null;
     try {

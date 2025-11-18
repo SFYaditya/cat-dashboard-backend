@@ -9,7 +9,7 @@ import { ethers } from 'ethers';
 
 export function createOverviewRoutes(db: Database): Router {
   const router = Router();
-  const provider = new ethers.JsonRpcProvider(API_CONFIG.RPC_URL);
+  const provider = new ethers.JsonRpcProvider(API_CONFIG.RPC_HTTP);
 
   // GET /cat/overview - 快速概览接口
   router.get('/', async (req, res) => {
@@ -23,7 +23,7 @@ export function createOverviewRoutes(db: Database): Router {
       res,
       db,
       provider,
-      API_CONFIG.LP_PAIR_ADDRESS,
+      API_CONFIG.CAT_LP_ADDRESS,
       API_CONFIG.CAT_TOKEN_ADDRESS
     );
   });
