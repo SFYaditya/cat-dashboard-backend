@@ -155,11 +155,11 @@ export class Database {
   }
 
   async getLatestPrice(): Promise<string | null> {
-    return swapQueries.getLatestPrice(this.db);
+    return swapQueries.getLatestPrice(this._db as sqlite3.Database);
   }
 
   async getCurrentPrice(): Promise<string | null> {
-    return swapQueries.getCurrentPrice(this.db);
+    return swapQueries.getCurrentPrice(this._db as sqlite3.Database);
   }
 
   async getSwapsByTimeRange(startTime: number, endTime: number): Promise<any[]> {
@@ -180,7 +180,7 @@ export class Database {
   }
 
   async getCurrentHoldersCount(): Promise<number> {
-    return holderQueries.getCurrentHoldersCount(this.db);
+    return holderQueries.getCurrentHoldersCount(this._db as sqlite3.Database);
   }
 
   async getHoldersCountForDay(day: string): Promise<number> {
@@ -217,11 +217,11 @@ export class Database {
   }
 
   async getAllTradingAddresses(): Promise<string[]> {
-    return addressQueries.getAllTradingAddresses(this.db);
+    return addressQueries.getAllTradingAddresses(this._db as sqlite3.Database);
   }
 
   async getAllTraderAddresses(): Promise<string[]> {
-    return addressQueries.getAllTraderAddresses(this.db);
+    return addressQueries.getAllTraderAddresses(this._db as sqlite3.Database);
   }
 
   async getAddressLast7DStats(address: string): Promise<{
@@ -241,7 +241,7 @@ export class Database {
   }
 
   async getLatestPriceForOverview(): Promise<string | null> {
-    return klineQueries.getLatestPriceForOverview(this.db);
+    return klineQueries.getLatestPriceForOverview(this._db as sqlite3.Database);
   }
 
   // ========== Daily Metrics 相关方法 ==========
@@ -288,7 +288,7 @@ export class Database {
   }
 
   async getLastProcessedSwapId(): Promise<number> {
-    return dailyQueries.getLastProcessedSwapId(this.db);
+    return dailyQueries.getLastProcessedSwapId(this._db as sqlite3.Database);
   }
 
   async updateLastProcessedSwapId(swapId: number): Promise<void> {
@@ -313,7 +313,7 @@ export class Database {
   }
 
   async getPrice24HAgo(): Promise<string | null> {
-    return dailyQueries.getPrice24HAgo(this.db);
+    return dailyQueries.getPrice24HAgo(this._db as sqlite3.Database);
   }
 
   async get24HStats(): Promise<{
@@ -321,7 +321,7 @@ export class Database {
     swaps_count: number;
     unique_traders: number;
   }> {
-    return dailyQueries.get24HStats(this.db);
+    return dailyQueries.get24HStats(this._db as sqlite3.Database);
   }
 
   // ========== PnL 相关方法 ==========
