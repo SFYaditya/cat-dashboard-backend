@@ -1,0 +1,377 @@
+/**
+ * Database 主类
+ * 组合所有查询模块，提供统一的数据库访问接口
+ * 支持 SQLite 和 PostgreSQL
+ */
+import sqlite3 from 'sqlite3';
+import { Pool } from 'pg';
+import { getDatabase, DB_TYPE, closeDatabase as closeDbConnection } from './connection';
+import { runMigrations } from './migrations';
+import * as syncQueries from './queries/sync.queries';
+import * as transferQueries from './queries/transfers.queries';
+import * as swapQueries from './queries/swaps.queries';
+import * as holderQueries from './queries/holders.queries';
+import * as addressQueries from './queries/addresses.queries';
+import * as klineQueries from './queries/kline.queries';
+import * as dailyQueries from './queries/daily.queries';
+import * as pnlQueries from './queries/pnl.queries';
+import * as lpQueries from './queries/lp.queries';
+import * as tradingRankingsQueries from './queries/trading-rankings.queries';
+import {
+  SyncState,
+  TransferData,
+  SwapData,
+  SwapUpdateData,
+  SwapsFilterParams,
+  TransfersFilterParams,
+  TransferSummary,
+  TransferGraph,
+  DailyTransferSummary,
+  KlineData,
+  KlineQueryParams,
+  DailyMetricsData,
+  DailyTradeStatsData,
+  AddressStatsData,
+  AddressRoundData,
+  PnlDailyData
+} from './types';
+
+export class Database {
+  private _db: sqlite3.Database | Pool;
+
+  constructor() {
+    this._db = getDatabase();
+    // 运行迁移（仅 SQLite，PostgreSQL 需要手动迁移）
+    if (DB_TYPE === 'sqlite') {
+      runMigrations(this._db as sqlite3.Database);
+    }
+  }
+
+  /**
+   * 获取数据库实例（SQLite 或 PostgreSQL）
+   */
+  get db(): sqlite3.Database | Pool {
+    return this._db;
+  }
+
+  /**
+   * 关闭数据库连接
+   */
+  async close(): Promise<void> {
+    await closeDbConnection();
+  }
+
+  // ========== Sync State 相关方法 ==========
+  async getSyncState(): Promise<SyncState | null> {
+    return syncQueries.getSyncState(this.db);
+  }
+
+  async updateSyncState(lastBlock: number, startBlock?: number): Promise<void> {
+    return syncQueries.updateSyncState(this.db, lastBlock, startBlock);
+  }
+
+  // ========== Transfer 相关方法 ==========
+  async insertTransfer(data: TransferData): Promise<void> {
+    return transferQueries.insertTransfer(this.db, data);
+  }
+
+  async getTransfersWithFilters(params: TransfersFilterParams): Promise<{ transfers: any[]; total: number }> {
+    return transferQueries.getTransfersWithFilters(this.db, params);
+  }
+
+  async getLatestTransfers(limit: number = 20): Promise<any[]> {
+    return transferQueries.getLatestTransfers(this.db, limit);
+  }
+
+  async getAddressTransferSummary(address: string): Promise<TransferSummary> {
+    return transferQueries.getAddressTransferSummary(this.db, address);
+  }
+
+  async getAddressTransferGraph(address: string, limit: number = 20): Promise<TransferGraph> {
+    return transferQueries.getAddressTransferGraph(this.db, address, limit);
+  }
+
+  async getDailyTransferSummary(date: string): Promise<DailyTransferSummary | null> {
+    return transferQueries.getDailyTransferSummary(this.db, date);
+  }
+
+  // ========== Swap 相关方法 ==========
+  async insertSwap(data: SwapData): Promise<void> {
+    return swapQueries.insertSwap(this.db, data);
+  }
+
+  async updateSwap(data: SwapUpdateData): Promise<void> {
+    return swapQueries.updateSwap(this.db, data);
+  }
+
+  async getSwapsNeedingBackfill(limit: number = 100): Promise<any[]> {
+    return swapQueries.getSwapsNeedingBackfill(this.db, limit);
+  }
+
+  async getSwapSummary(limit: number = 100): Promise<any> {
+    return swapQueries.getSwapSummary(this.db, limit);
+  }
+
+  async getLatestSwaps(limit: number = 20): Promise<any[]> {
+    return swapQueries.getLatestSwaps(this.db, limit);
+  }
+
+  async getAddressSwaps(address: string): Promise<any[]> {
+    return swapQueries.getAddressSwaps(this.db, address);
+  }
+
+  async getSwapsWithFilters(params: SwapsFilterParams): Promise<{ swaps: any[]; total: number }> {
+    return swapQueries.getSwapsWithFilters(this.db, params);
+  }
+
+  async getSwapsForKline(startTime?: number, endTime?: number): Promise<any[]> {
+    return swapQueries.getSwapsForKline(this.db, startTime, endTime);
+  }
+
+  async getLatestPrice(): Promise<string | null> {
+    return swapQueries.getLatestPrice(this.db);
+  }
+
+  async getCurrentPrice(): Promise<string | null> {
+    return swapQueries.getCurrentPrice(this.db);
+  }
+
+  async getSwapsByTimeRange(startTime: number, endTime: number): Promise<any[]> {
+    return dailyQueries.getSwapsByTimeRange(this.db, startTime, endTime);
+  }
+
+  // ========== Holder 相关方法 ==========
+  async updateHolderBalance(address: string, delta: string, operation: 'add' | 'subtract'): Promise<void> {
+    return holderQueries.updateHolderBalance(this.db, address, delta, operation);
+  }
+
+  async getHolderBalance(address: string): Promise<{ balance_cat: string } | null> {
+    return holderQueries.getHolderBalance(this.db, address);
+  }
+
+  async getLatestChainBalance(address: string): Promise<{ balance_cat_after: string; balance_usdt_after: string } | null> {
+    return holderQueries.getLatestChainBalance(this.db, address);
+  }
+
+  async getCurrentHoldersCount(): Promise<number> {
+    return holderQueries.getCurrentHoldersCount(this.db);
+  }
+
+  async getHoldersCountForDay(day: string): Promise<number> {
+    return holderQueries.getHoldersCountForDay(this.db, day);
+  }
+
+  async saveDailyHoldersSnapshot(day: string): Promise<void> {
+    return holderQueries.saveDailyHoldersSnapshot(this.db, day);
+  }
+
+  async getOpenHoldersCount(day: string): Promise<number | null> {
+    return holderQueries.getOpenHoldersCount(this.db, day);
+  }
+
+  // ========== Address 相关方法 ==========
+  async getAddressLabel(address: string): Promise<any | null> {
+    return addressQueries.getAddressLabel(this.db, address);
+  }
+
+  async upsertAddressStats(data: AddressStatsData): Promise<void> {
+    return addressQueries.upsertAddressStats(this.db, data);
+  }
+
+  async getAddressStats(address: string): Promise<any | null> {
+    return addressQueries.getAddressStats(this.db, address);
+  }
+
+  async insertAddressRound(data: AddressRoundData): Promise<void> {
+    return addressQueries.insertAddressRound(this.db, data);
+  }
+
+  async getAddressRounds(address: string): Promise<any[]> {
+    return addressQueries.getAddressRounds(this.db, address);
+  }
+
+  async getAllTradingAddresses(): Promise<string[]> {
+    return addressQueries.getAllTradingAddresses(this.db);
+  }
+
+  async getAllTraderAddresses(): Promise<string[]> {
+    return addressQueries.getAllTraderAddresses(this.db);
+  }
+
+  async getAddressLast7DStats(address: string): Promise<{
+    volume_usd: string;
+    trades: number;
+  }> {
+    return addressQueries.getAddressLast7DStats(this.db, address);
+  }
+
+  // ========== Kline 相关方法 ==========
+  async upsertKline(data: KlineData): Promise<void> {
+    return klineQueries.upsertKline(this.db, data);
+  }
+
+  async getKlines(params: KlineQueryParams): Promise<any[]> {
+    return klineQueries.getKlines(this.db, params);
+  }
+
+  async getLatestPriceForOverview(): Promise<string | null> {
+    return klineQueries.getLatestPriceForOverview(this.db);
+  }
+
+  // ========== Daily Metrics 相关方法 ==========
+  async upsertDailyMetrics(data: DailyMetricsData): Promise<void> {
+    return dailyQueries.upsertDailyMetrics(this.db, data);
+  }
+
+  async getDailyMetrics(startDay?: string, endDay?: string): Promise<any[]> {
+    return dailyQueries.getDailyMetrics(this.db, startDay, endDay);
+  }
+
+  async getUniqueTradersForDay(dayStart: number, dayEnd: number): Promise<number> {
+    return dailyQueries.getUniqueTradersForDay(this.db, dayStart, dayEnd);
+  }
+
+  // ========== Daily Trade Stats 相关方法 ==========
+  async upsertDailyTradeStats(date: string, data: DailyTradeStatsData): Promise<void> {
+    return dailyQueries.upsertDailyTradeStats(this.db, date, data);
+  }
+
+  async getDailyTradeStats(startDate?: string, endDate?: string): Promise<Array<DailyTradeStatsData>> {
+    return dailyQueries.getDailyTradeStats(this.db, startDate, endDate);
+  }
+
+  async incrementDailyTradeStats(
+    dateStr: string,
+    traderAddress: string,
+    side: 'buy' | 'sell',
+    amountCat: string
+  ): Promise<void> {
+    return dailyQueries.incrementDailyTradeStats(this.db, dateStr, traderAddress, side, amountCat);
+  }
+
+  async hasDailyTradeStats(date: string): Promise<boolean> {
+    return dailyQueries.hasDailyTradeStats(this.db, date);
+  }
+
+  async getOpenPrice(day: string): Promise<string | null> {
+    return dailyQueries.getOpenPrice(this.db, day);
+  }
+
+  async getFirstSwapOfDay(day: string): Promise<{ block_number: number; block_time: number } | null> {
+    return dailyQueries.getFirstSwapOfDay(this.db, day);
+  }
+
+  async getLastProcessedSwapId(): Promise<number> {
+    return dailyQueries.getLastProcessedSwapId(this.db);
+  }
+
+  async updateLastProcessedSwapId(swapId: number): Promise<void> {
+    // 这个方法在原始代码中使用 sync_state 表存储，但逻辑上应该属于 daily 查询
+    // 为了保持兼容性，暂时保留在这里，可以后续移到 daily.queries.ts
+    const { promisify } = await import('util');
+    const run = promisify(this.db.run.bind(this.db)) as (sql: string, params?: any[]) => Promise<sqlite3.RunResult>;
+    await run(
+      `INSERT OR REPLACE INTO sync_state (key, last_block, updated_at)
+       VALUES ('pnl_last_swap_id', ?, strftime('%s', 'now'))`,
+      [swapId]
+    );
+  }
+
+  async getSwapsAfterId(swapId: number): Promise<any[]> {
+    return dailyQueries.getSwapsAfterId(this.db, swapId);
+  }
+
+  async getPrice24HAgo(): Promise<string | null> {
+    return dailyQueries.getPrice24HAgo(this.db);
+  }
+
+  async get24HStats(): Promise<{
+    volume_usd: string;
+    swaps_count: number;
+    unique_traders: number;
+  }> {
+    return dailyQueries.get24HStats(this.db);
+  }
+
+  // ========== PnL 相关方法 ==========
+  async upsertPnlDaily(address: string, date: string, data: Omit<PnlDailyData, 'address' | 'date'>): Promise<void> {
+    return pnlQueries.upsertPnlDaily(this.db, address, date, data);
+  }
+
+  async getAddressPnlHistory(address: string, days: number = 30): Promise<any[]> {
+    return pnlQueries.getAddressPnlHistory(this.db, address, days);
+  }
+
+  async getAddressPnlSummary(address: string): Promise<any> {
+    return pnlQueries.getAddressPnlSummary(this.db, address);
+  }
+
+  // ========== LP 快照相关方法 ==========
+  async getLpSnapshot(date: string): Promise<{
+    date: string;
+    block_number: number;
+    block_time: number;
+    lp_value_usd: string;
+    cat_amount: string;
+    usdt_amount: string;
+    snapshot_type: string;
+  } | null> {
+    return lpQueries.getLpSnapshot(this.db, date);
+  }
+
+  async upsertLpSnapshot(data: {
+    date: string;
+    block_number: number;
+    block_time: number;
+    lp_value_usd: string;
+    cat_amount: string;
+    usdt_amount: string;
+    snapshot_type?: string;
+  }): Promise<void> {
+    return lpQueries.upsertLpSnapshot(this.db, data);
+  }
+
+  // ========== 交易排行榜相关方法 ==========
+  async getBuyVolumeTop(limit: number = 50, startTime?: number, endTime?: number) {
+    return tradingRankingsQueries.getBuyVolumeTop(this.db, limit, startTime, endTime);
+  }
+
+  async getSellVolumeTop(limit: number = 50, startTime?: number, endTime?: number) {
+    return tradingRankingsQueries.getSellVolumeTop(this.db, limit, startTime, endTime);
+  }
+
+  async getBuyCountTop(limit: number = 20, startTime?: number, endTime?: number) {
+    return tradingRankingsQueries.getBuyCountTop(this.db, limit, startTime, endTime);
+  }
+
+  async getSellCountTop(limit: number = 20, startTime?: number, endTime?: number) {
+    return tradingRankingsQueries.getSellCountTop(this.db, limit, startTime, endTime);
+  }
+
+  async getTradeCountTop(limit: number = 20, startTime?: number, endTime?: number) {
+    return tradingRankingsQueries.getTradeCountTop(this.db, limit, startTime, endTime);
+  }
+
+  async getBuySellRatio(startTime?: number, endTime?: number) {
+    return tradingRankingsQueries.getBuySellRatio(this.db, startTime, endTime);
+  }
+
+  // ========== 工具方法 ==========
+  async close(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.close((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  // 暴露 db 实例（用于向后兼容，某些地方可能需要直接访问）
+  get dbInstance(): sqlite3.Database {
+    return this.db;
+  }
+}
+
