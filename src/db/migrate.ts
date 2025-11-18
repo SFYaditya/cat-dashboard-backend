@@ -353,15 +353,8 @@ async function main() {
       });
     });
   } else {
-    // 尝试使用 getDatabase（向后兼容）
-    const db = getDatabase();
-    if (DB_TYPE === 'postgres') {
-      console.log('📊 Database type: PostgreSQL');
-      await runPostgresMigrations(db as Pool);
-    } else {
-      console.log('📊 Database type: SQLite');
-      await runSqliteMigrations(db as sqlite3.Database);
-    }
+    // 如果没有配置环境变量，提示用户
+    throw new Error('Please set DATABASE_URL (for PostgreSQL) or DATABASE_PATH (for SQLite) environment variable');
   }
   
   console.log('\n✨ All migrations completed!');
