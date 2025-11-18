@@ -359,7 +359,10 @@ export class Database {
     usdt_amount: string;
     snapshot_type?: string;
   }): Promise<void> {
-    return lpQueries.upsertLpSnapshot(this.db, data);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('upsertLpSnapshot is only supported for SQLite');
+    }
+    return lpQueries.upsertLpSnapshot(this._db as sqlite3.Database, data);
   }
 
   // ========== 交易排行榜相关方法 ==========
