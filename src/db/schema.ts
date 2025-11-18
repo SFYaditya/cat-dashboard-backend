@@ -158,15 +158,15 @@ export class Database {
   }
 
   async getAddressSwaps(address: string): Promise<any[]> {
-    return swapQueries.getAddressSwaps(this.db, address);
+    return swapQueries.getAddressSwaps(this._db as sqlite3.Database, address);
   }
 
   async getSwapsWithFilters(params: SwapsFilterParams): Promise<{ swaps: any[]; total: number }> {
-    return swapQueries.getSwapsWithFilters(this.db, params);
+    return swapQueries.getSwapsWithFilters(this._db as sqlite3.Database, params);
   }
 
   async getSwapsForKline(startTime?: number, endTime?: number): Promise<any[]> {
-    return swapQueries.getSwapsForKline(this.db, startTime, endTime);
+    return swapQueries.getSwapsForKline(this._db as sqlite3.Database, startTime, endTime);
   }
 
   async getLatestPrice(): Promise<string | null> {
@@ -178,20 +178,20 @@ export class Database {
   }
 
   async getSwapsByTimeRange(startTime: number, endTime: number): Promise<any[]> {
-    return dailyQueries.getSwapsByTimeRange(this.db, startTime, endTime);
+    return dailyQueries.getSwapsByTimeRange(this._db as sqlite3.Database, startTime, endTime);
   }
 
   // ========== Holder 相关方法 ==========
   async updateHolderBalance(address: string, delta: string, operation: 'add' | 'subtract'): Promise<void> {
-    return holderQueries.updateHolderBalance(this.db, address, delta, operation);
+    return holderQueries.updateHolderBalance(this._db as sqlite3.Database, address, delta, operation);
   }
 
   async getHolderBalance(address: string): Promise<{ balance_cat: string } | null> {
-    return holderQueries.getHolderBalance(this.db, address);
+    return holderQueries.getHolderBalance(this._db as sqlite3.Database, address);
   }
 
   async getLatestChainBalance(address: string): Promise<{ balance_cat_after: string; balance_usdt_after: string } | null> {
-    return holderQueries.getLatestChainBalance(this.db, address);
+    return holderQueries.getLatestChainBalance(this._db as sqlite3.Database, address);
   }
 
   async getCurrentHoldersCount(): Promise<number> {
@@ -199,36 +199,36 @@ export class Database {
   }
 
   async getHoldersCountForDay(day: string): Promise<number> {
-    return holderQueries.getHoldersCountForDay(this.db, day);
+    return holderQueries.getHoldersCountForDay(this._db as sqlite3.Database, day);
   }
 
   async saveDailyHoldersSnapshot(day: string): Promise<void> {
-    return holderQueries.saveDailyHoldersSnapshot(this.db, day);
+    return holderQueries.saveDailyHoldersSnapshot(this._db as sqlite3.Database, day);
   }
 
   async getOpenHoldersCount(day: string): Promise<number | null> {
-    return holderQueries.getOpenHoldersCount(this.db, day);
+    return holderQueries.getOpenHoldersCount(this._db as sqlite3.Database, day);
   }
 
   // ========== Address 相关方法 ==========
   async getAddressLabel(address: string): Promise<any | null> {
-    return addressQueries.getAddressLabel(this.db, address);
+    return addressQueries.getAddressLabel(this._db as sqlite3.Database, address);
   }
 
   async upsertAddressStats(data: AddressStatsData): Promise<void> {
-    return addressQueries.upsertAddressStats(this.db, data);
+    return addressQueries.upsertAddressStats(this._db as sqlite3.Database, data);
   }
 
   async getAddressStats(address: string): Promise<any | null> {
-    return addressQueries.getAddressStats(this.db, address);
+    return addressQueries.getAddressStats(this._db as sqlite3.Database, address);
   }
 
   async insertAddressRound(data: AddressRoundData): Promise<void> {
-    return addressQueries.insertAddressRound(this.db, data);
+    return addressQueries.insertAddressRound(this._db as sqlite3.Database, data);
   }
 
   async getAddressRounds(address: string): Promise<any[]> {
-    return addressQueries.getAddressRounds(this.db, address);
+    return addressQueries.getAddressRounds(this._db as sqlite3.Database, address);
   }
 
   async getAllTradingAddresses(): Promise<string[]> {
@@ -243,16 +243,16 @@ export class Database {
     volume_usd: string;
     trades: number;
   }> {
-    return addressQueries.getAddressLast7DStats(this.db, address);
+    return addressQueries.getAddressLast7DStats(this._db as sqlite3.Database, address);
   }
 
   // ========== Kline 相关方法 ==========
   async upsertKline(data: KlineData): Promise<void> {
-    return klineQueries.upsertKline(this.db, data);
+    return klineQueries.upsertKline(this._db as sqlite3.Database, data);
   }
 
   async getKlines(params: KlineQueryParams): Promise<any[]> {
-    return klineQueries.getKlines(this.db, params);
+    return klineQueries.getKlines(this._db as sqlite3.Database, params);
   }
 
   async getLatestPriceForOverview(): Promise<string | null> {
@@ -261,24 +261,24 @@ export class Database {
 
   // ========== Daily Metrics 相关方法 ==========
   async upsertDailyMetrics(data: DailyMetricsData): Promise<void> {
-    return dailyQueries.upsertDailyMetrics(this.db, data);
+    return dailyQueries.upsertDailyMetrics(this._db as sqlite3.Database, data);
   }
 
   async getDailyMetrics(startDay?: string, endDay?: string): Promise<any[]> {
-    return dailyQueries.getDailyMetrics(this.db, startDay, endDay);
+    return dailyQueries.getDailyMetrics(this._db as sqlite3.Database, startDay, endDay);
   }
 
   async getUniqueTradersForDay(dayStart: number, dayEnd: number): Promise<number> {
-    return dailyQueries.getUniqueTradersForDay(this.db, dayStart, dayEnd);
+    return dailyQueries.getUniqueTradersForDay(this._db as sqlite3.Database, dayStart, dayEnd);
   }
 
   // ========== Daily Trade Stats 相关方法 ==========
   async upsertDailyTradeStats(date: string, data: DailyTradeStatsData): Promise<void> {
-    return dailyQueries.upsertDailyTradeStats(this.db, date, data);
+    return dailyQueries.upsertDailyTradeStats(this._db as sqlite3.Database, date, data);
   }
 
   async getDailyTradeStats(startDate?: string, endDate?: string): Promise<Array<DailyTradeStatsData>> {
-    return dailyQueries.getDailyTradeStats(this.db, startDate, endDate);
+    return dailyQueries.getDailyTradeStats(this._db as sqlite3.Database, startDate, endDate);
   }
 
   async incrementDailyTradeStats(
@@ -287,19 +287,19 @@ export class Database {
     side: 'buy' | 'sell',
     amountCat: string
   ): Promise<void> {
-    return dailyQueries.incrementDailyTradeStats(this.db, dateStr, traderAddress, side, amountCat);
+    return dailyQueries.incrementDailyTradeStats(this._db as sqlite3.Database, dateStr, traderAddress, side, amountCat);
   }
 
   async hasDailyTradeStats(date: string): Promise<boolean> {
-    return dailyQueries.hasDailyTradeStats(this.db, date);
+    return dailyQueries.hasDailyTradeStats(this._db as sqlite3.Database, date);
   }
 
   async getOpenPrice(day: string): Promise<string | null> {
-    return dailyQueries.getOpenPrice(this.db, day);
+    return dailyQueries.getOpenPrice(this._db as sqlite3.Database, day);
   }
 
   async getFirstSwapOfDay(day: string): Promise<{ block_number: number; block_time: number } | null> {
-    return dailyQueries.getFirstSwapOfDay(this.db, day);
+    return dailyQueries.getFirstSwapOfDay(this._db as sqlite3.Database, day);
   }
 
   async getLastProcessedSwapId(): Promise<number> {
@@ -324,7 +324,7 @@ export class Database {
   }
 
   async getSwapsAfterId(swapId: number): Promise<any[]> {
-    return dailyQueries.getSwapsAfterId(this.db, swapId);
+    return dailyQueries.getSwapsAfterId(this._db as sqlite3.Database, swapId);
   }
 
   async getPrice24HAgo(): Promise<string | null> {
@@ -341,15 +341,15 @@ export class Database {
 
   // ========== PnL 相关方法 ==========
   async upsertPnlDaily(address: string, date: string, data: Omit<PnlDailyData, 'address' | 'date'>): Promise<void> {
-    return pnlQueries.upsertPnlDaily(this.db, address, date, data);
+    return pnlQueries.upsertPnlDaily(this._db as sqlite3.Database, address, date, data);
   }
 
   async getAddressPnlHistory(address: string, days: number = 30): Promise<any[]> {
-    return pnlQueries.getAddressPnlHistory(this.db, address, days);
+    return pnlQueries.getAddressPnlHistory(this._db as sqlite3.Database, address, days);
   }
 
   async getAddressPnlSummary(address: string): Promise<any> {
-    return pnlQueries.getAddressPnlSummary(this.db, address);
+    return pnlQueries.getAddressPnlSummary(this._db as sqlite3.Database, address);
   }
 
   // ========== LP 快照相关方法 ==========
