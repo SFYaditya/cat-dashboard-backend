@@ -328,14 +328,40 @@ async function runSqliteMigrations(db: sqlite3.Database): Promise<void> {
 async function main() {
   console.log('🚀 Starting database migrations...\n');
   
-  const db = getDatabase();
+  // 检查数据库类型
+  const databaseUrl = process.env.DATABASE_URL;
+  const databasePath = process.env.DATABASE_PATH;
   
-  if (DB_TYPE === 'postgres') {
+  if (databaseUrl && databaseUrl.startsWith('postgres')) {
     console.log('📊 Database type: PostgreSQL');
-    await runPostgresMigrations(db as Pool);
-  } else {
+    const pool = new Pool({
+      connectionString: databaseUrl,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+    await runPostgresMigrations(pool);
+    await pool.end();
+  } else if (databasePath) {
     console.log('📊 Database type: SQLite');
-    await runSqliteMigrations(db as sqlite3.Database);
+    const sqliteDb = new sqlite3.Database(databasePath);
+    await runSqliteMigrations(sqliteDb);
+    await new Promise<void>((resolve, reject) => {
+      sqliteDb.close((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  } else {
+    // 尝试使用 getDatabase（向后兼容）
+    const db = getDatabase();
+    if (DB_TYPE === 'postgres') {
+      console.log('📊 Database type: PostgreSQL');
+      await runPostgresMigrations(db as Pool);
+    } else {
+      console.log('📊 Database type: SQLite');
+      await runSqliteMigrations(db as sqlite3.Database);
+    }
   }
   
   console.log('\n✨ All migrations completed!');
