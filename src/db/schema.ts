@@ -347,7 +347,10 @@ export class Database {
     usdt_amount: string;
     snapshot_type: string;
   } | null> {
-    return lpQueries.getLpSnapshot(this.db, date);
+    if (DB_TYPE !== 'sqlite') {
+      throw new Error('getLpSnapshot is only supported for SQLite');
+    }
+    return lpQueries.getLpSnapshot(this._db as sqlite3.Database, date);
   }
 
   async upsertLpSnapshot(data: {
